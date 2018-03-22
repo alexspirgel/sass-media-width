@@ -1,42 +1,58 @@
-$breakpoints: (
-	small: 700,
-	medium: 1000,
-	large: 1300
-);
+/**
+* Sass Media Width v1.0.0
+* https://github.com/alexspirgel/sass-media-width
+*/
 
 @mixin media-width($arguments...) {
 
+	// Initialize breakpoints.
+	$breakpoints: (
+		'small': 700,
+		'medium': 1000,
+		'large': 1300
+	);
+
+	// Initialize string for eventual output.
 	$media-query: '';
 
-	// Multiple rules list style.
+	// Multiple rules list style arguments.
 	@if type-of(nth($arguments, 1)) == list {
 
+		// Initialize list for multiple rule storage.
 		$media-rules-list: ();
 
 		@each $argument in $arguments {
-			$rule: media-width__generate-rule(nth($argument, 1), nth($argument, 2));
+			// Generate a rule.
+			$rule: media-width__generate-rule($breakpoints, nth($argument, 1), nth($argument, 2));
+			// Append rule to list.
 			$media-rules-list: append($media-rules-list, $rule);
 		}
 
 		@for $rule from 1 through length($media-rules-list) {
+			// If it's not the first rule.
 			@if $rule > 1 {
+				// Append 'and' to the media query before adding the rule.
 				$media-query: $media-query + ' and ';
 			}
+			// Add the rule to the media query.
 			$media-query: $media-query + nth($media-rules-list, $rule);
 		}
 
 	}
 
-	// Single rule string style
-	@else if type-of(nth($arguments, 1)) == string and type-of(nth($arguments, 2)) == string {
+	// Single rule string style arguments.
+	@else if length($arguments) == 2 and type-of(nth($arguments, 1)) == string and type-of(nth($arguments, 2)) == string {
 
-		$rule: media-width__generate-rule(nth($arguments, 1), nth($arguments, 2));
-		$media-query: $media-query + $rule
+		// Generate a rule.
+		$rule: media-width__generate-rule($breakpoints, nth($arguments, 1), nth($arguments, 2));
+		// Set the media query as the rule.
+		$media-query: $rule;
 
 	}
 
+	// Invalid arguments.
 	@else {
-		@error "Invalid arguments: should be a pair of strings, or lists of string pairs.";
+		@error "Invalid arguments: `#{$arguments}` should be a pair of strings, or lists of string pairs.";
 	}
 
 	// Print out the media query.
@@ -46,49 +62,53 @@ $breakpoints: (
 
 }
 
-@function media-width__generate-rule($modifier, $breakpoint) {
+@function media-width__generate-rule($breakpoints-map, $modifier, $breakpoint) {
 
-	@if map-has-key($breakpoints, $breakpoint) {
+	// Check that `$breakpoint` exists in `$breakpoints-map`.
+	@if map-has-key($breakpoints-map, $breakpoint) {
 
-		$media-query: '';
-		$breakpoint-number: map-get($breakpoints, $breakpoint);
+		// Initialize string for eventual output.
+		$generated-media-query: '';
+		// Set variables from arguments.
+		$breakpoint-number: map-get($breakpoints-map, $breakpoint);
 		$modifier-character-1: str-slice($modifier, 1, 1);
 		$modifier-character-2: str-slice($modifier, 2, 2);
 		
-		// Less than (use max-width).
+		// Less than modifier (use max-width).
 		@if $modifier-character-1 == '<' {
 			@if $modifier-character-2 != '=' {
 				$breakpoint-number: $breakpoint-number - 1;
 			}
-			@return $media-query + '(max-width: #{$breakpoint-number + px})';
+			@return $generated-media-query + '(max-width: #{$breakpoint-number + px})';
 		}
 
-		// Greater than (use min-width).
+		// Greater than modifier (use min-width).
 		@else if $modifier-character-1 == '>' {
 			@if $modifier-character-2 != '=' {
 				$breakpoint-number: $breakpoint-number + 1;
 			}
-			@return $media-query + '(min-width: #{$breakpoint-number + px})';
+			@return $generated-media-query + '(min-width: #{$breakpoint-number + px})';
 		}
 
 	}
 
+	// Invalid breakpoint.
 	@else {
 		@error "Invalid argument: `#{$breakpoint}` is not a breakpoint in the breakpoint map";
 	}
 
 }
 
-// Example
+// ~= Example Usage =~ //
 
 body {
-	@include media-width('<', small) {
+	@include media-width('<', 'small') {
 		background-color: red;
 	}
-	@include media-width(('>=', small), ('<', medium)) {
+	@include media-width(('>=', 'small'), ('<', 'medium')) {
 		background-color: green;
 	}
-	@include media-width('>=', medium) {
+	@include media-width('>=', 'medium') {
 		background-color: blue;
 	}
 }
