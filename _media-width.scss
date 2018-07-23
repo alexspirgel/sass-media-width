@@ -3,14 +3,14 @@
 * https://github.com/alexspirgel/sass-media-width
 */
 
-@mixin media-width($arguments...) {
+// Initialize breakpoints.
+$breakpoints: (
+	'small': 700,
+	'medium': 1000,
+	'large': 1300
+);
 
-	// Initialize breakpoints.
-	$breakpoints: (
-		'small': 700,
-		'medium': 1000,
-		'large': 1300
-	);
+@mixin media-width($arguments...) {
 
 	// Initialize string for eventual output.
 	$media-query: '';
@@ -99,7 +99,7 @@
 
 }
 
-// ~= Example Usage =~ //
+// Example Usage.
 
 body {
 	@include media-width('<', 'small') {
